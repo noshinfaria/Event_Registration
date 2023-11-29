@@ -1,0 +1,45 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+  
+  {% comment %} <div>
+
+    <ul>
+        {% for data in queryset %}
+            <div>
+                <h2>{{ data.title }}</h2>
+                <p>{{ data.description }}</p>
+                
+                
+            </div>
+        {% endfor %}
+    </ul> {% endcomment %}
+    <h1>{{ event.title }} Details</h1>
+    <p><strong>Date:</strong> {{ event.date }}</p>
+    <p><strong>time:</strong> {{ event.time }}</p>
+    <p><strong>Location:</strong> {{ event.location_name }}</p>
+    <p><strong>Description:</strong> {{ event.description }}</p>
+    <!-- Add more details as needed -->
+
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'book-event' event.id %}">
+            {% csrf_token %}
+            <button type="submit">Book Event</button>
+        </form>
+    {% else %}
+        <p>Login to book this event.</p>
+    {% endif %}
+
+    <a href="{% url 'event-list' %}">Back to Event List</a>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</div>
+{% endblock %}

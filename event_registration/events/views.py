@@ -1,41 +1,68 @@
 # events/views.py
+from django.shortcuts import render
 from rest_framework import generics
 from .models import Event, EventRegistration
 from .serializers import EventSerializer, EventRegistrationSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
+from django.shortcuts import get_object_or_404, redirect
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.contrib import messages
 
 
 
-class EventListCreateView(generics.ListCreateAPIView):
+
+# class EventListCreateView(generics.ListCreateAPIView):
+#     queryset = Event.objects.all()
+#     serializer_class = EventSerializer
+#     template_name = 'events/event_list.html'
+
+
+class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-class EventRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    def list(self, request, *args, **kwargs):
+        queryset = Event.objects.all()
+        return render(request, 'events/event_list.html', {'queryset': queryset})
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return render(request, 'events/event_detail.html', {'event': instance})
 
 
-class EventRegistrationView(generics.CreateAPIView):
-    queryset = EventRegistration.objects.all()
-    serializer_class = EventRegistrationSerializer
 
-    def create(self, request, *args, **kwargs):
-        event_id = self.kwargs.get('pk')
-        try:
-            event = Event.objects.get(pk=event_id)
-        except Event.DoesNotExist:
-            return Response({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if event.available_slots > 0:
-            user = self.request.user
-            registration, created = EventRegistration.objects.get_or_create(user=user, event=event)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def book_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
 
-            if created:
-                event.available_slots -= 1
-                event.save()
-                return Response(EventRegistrationSerializer(registration).data, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"error": "User already registered for this event"}, status=status.HTTP_400_BAD_REQUEST)
+    if event.available_slots > 0:
+        if EventRegistration.objects.filter(user=request.user, event=event).exists():
+            messages.warning(request, 'You have already registered for this event.')
         else:
-            return Response({"error": "No available slots for this event"}, status=status.HTTP_400_BAD_REQUEST)
+            EventRegistration.objects.create(user=request.user, event=event)
+            event.available_slots -= 1
+            event.save()
+            messages.success(request, 'Event booked successfully.')
+    else:
+        messages.error(request, 'No available slots for this event.')
+
+    return redirect('event-detail', pk=event_id)
+
+
+class UserRegisteredEventsAPIView(generics.ListAPIView):
+    serializer_class = EventRegistrationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return EventRegistration.objects.filter(user=user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        context = {'registered_events': serializer.data}
+        return render(request, 'events/user_registered_events.html', context)
