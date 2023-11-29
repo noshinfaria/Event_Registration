@@ -3,13 +3,13 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<div class='container mt-3'>
 {% if user.is_authenticated %}
+
   Hi {{ user.username }}!
   <br>
-<a href="{% url 'event-list-create' %}">Event</a><br>
-{% comment %} <a href="{% url 'event-retrieve-update-destroy' EventRegistration.pk %}">Event Registration</a> {% endcomment %}
-<br>
-  <a href="">shared-file</a><br>
+<a href="{% url 'event-list' %}">Events</a><br>
+  <a href="{% url 'registered-events' %}">Registered Events</a><br>
   <p><a href="{% url 'logout' %}">Log Out</a></p>
 {% else %}
   <p>You are not logged in</p>
@@ -21,4 +21,5 @@
   <p>API Documentation</p>
   <a href="">Api Documentation</a>
 {% endif %}
+</div>
 {% endblock %}

@@ -6,18 +6,18 @@
 
     {% if registered_events %}
         <ul>
-            {% for registration in registered_events %}
-            <div class="row justify-content-center mt-3">
-                <div class="col-md-5 col-sm-12 border-bottom position-relative">
-                      
+            {% for event_registration in registered_events %}
                 <li>
-                    <strong>{{ registration.event.title }}</strong>
-                    <br>
-                    {{ registration.event.date }} at {{ registration.event.time }}<br>
-                    {{ registration.event.location_name }}
+                    <strong>{{ event_registration.event.title }}</strong> <br>
+                    {{ event_registration.event.date }} at {{ event.event.time }} <br>
+                    {{ event_registration.event.location_name }}<br>
+                    {{ event_registration.id}}
+                    <form id="unregister-form" method="post" action="{% url 'unregister-from-event' event_registration.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="DELETE">
+                        <button type="button" onclick="unregister()">Unregister</button>
+                    </form>
                 </li>
-            </div>
-        </div>
             {% endfor %}
         </ul>
     {% else %}
@@ -26,4 +26,14 @@
 
     <a href="{% url 'event-list' %}">Back to Event List</a>
 </div>
+
+<script>
+    function unregister() {
+        if (confirm('Are you sure you want to unregister?')) {
+            var form = document.getElementById('unregister-form');
+            form.method = 'POST';
+            form.submit();
+        }
+    }
+</script>
 {% endblock %}
