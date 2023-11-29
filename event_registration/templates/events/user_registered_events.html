@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>My Event List</h1>
+  <div>
+
+    {% if registered_events %}
+        <ul>
+            {% for registration in registered_events %}
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-5 col-sm-12 border-bottom position-relative">
+                      
+                <li>
+                    <strong>{{ registration.event.title }}</strong>
+                    <br>
+                    {{ registration.event.date }} at {{ registration.event.time }}<br>
+                    {{ registration.event.location_name }}
+                </li>
+            </div>
+        </div>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't registered for any events yet.</p>
+    {% endif %}
+
+    <a href="{% url 'event-list' %}">Back to Event List</a>
+</div>
+{% endblock %}
