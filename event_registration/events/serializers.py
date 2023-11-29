@@ -28,7 +28,7 @@ class EventRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventRegistration
-        fields = ['event']
+        fields = ['id', 'event']
 
     def get_event(self, obj):
         return EventSerializer(obj.event).data

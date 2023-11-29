@@ -3,9 +3,33 @@
 
 {% block content %}
   <h1>Event List</h1>
-  <div>
+  <form id="search-form">
+    <label for="search">Search:</label>
+    <input type="text" id="search" name="search">
+    <button type="button" onclick="searchEvents()">Search</button>
+</form>
+<ul id="event-list">
+  
+</ul>
+  
 
-    <ul>
+    {% if queryset %}
+            {% for event in queryset %}
+            <div class="row justify-content-center mt-3">
+              <div class="col-md-5 col-sm-12 border-bottom position-relative">
+                <li>
+                  <h2>{{ event.title }}</h2>
+                  <p>{{ event.description }}</p>
+                  <a href="{% url 'event-detail' pk=event.pk %}" class="stretched-link"></a>
+                </li>
+              </div>
+              </div>
+            {% endfor %}
+        {% else %}
+            <p>No events found.</p>
+        {% endif %}
+
+    {% comment %} <ul>
         {% for data in queryset %}
         <div class="row justify-content-center mt-3">
           <div class="col-md-5 col-sm-12 border-bottom position-relative">
@@ -16,6 +40,49 @@
           </div>
         </div>
         {% endfor %}
-    </ul>
+    </ul> {% endcomment %}
 </div>
+
+<script>
+  // Function to handle search functionality
+  function searchEvents() {
+      var searchTerm = document.getElementById('search').value;
+      var url = '/api/events/?search=' + encodeURIComponent(searchTerm);
+
+      // Fetch the search results from the API
+      fetch(url)
+          .then(response => response.json())
+          .then(data => {
+              // Update the event list with the search results
+              var eventList = document.getElementById('event-list');
+              // Clear existing items
+              eventList.innerHTML = '';
+
+              // Add new items based on the search results
+              data.forEach(event => {
+                  // Create li element
+                  var listItem = document.createElement('li');
+                  
+                  // Create h2 element for event title
+                  var titleElement = document.createElement('h2');
+                  titleElement.textContent = event.title;
+                  listItem.appendChild(titleElement);
+
+                  // Create p element for event description
+                  var descriptionElement = document.createElement('p');
+                  descriptionElement.textContent = event.description;
+                  listItem.appendChild(descriptionElement);
+
+                  // Set data-event-detail-url attribute
+                  listItem.setAttribute('data-event-detail-url', '/events/' + event.pk + '/'); // Adjust the URL structure as needed
+
+                  // Append the li element to the event list
+                  eventList.appendChild(listItem);
+              });
+          })
+          .catch(error => {
+              console.error('Error fetching search results:', error);
+          });
+  }
+</script>
 {% endblock %}

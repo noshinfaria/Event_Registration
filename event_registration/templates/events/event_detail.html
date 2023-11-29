@@ -2,19 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-  
-  {% comment %} <div>
 
-    <ul>
-        {% for data in queryset %}
-            <div>
-                <h2>{{ data.title }}</h2>
-                <p>{{ data.description }}</p>
-                
-                
-            </div>
-        {% endfor %}
-    </ul> {% endcomment %}
     <h1>{{ event.title }} Details</h1>
     <p><strong>Date:</strong> {{ event.date }}</p>
     <p><strong>time:</strong> {{ event.time }}</p>
